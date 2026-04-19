@@ -1,26 +1,43 @@
-import { ArrayField, DataTable, DateField } from "@/components/admin";
+import {
+  ArrayField,
+  DataTable,
+  DateField,
+  TextField,
+} from "@/components/admin";
 import { List } from "@/components/admin/list";
 import { ReferenceField } from "@/components/admin/reference-field";
 import { BooleanField } from "react-admin";
+import { CreateButton } from "@/components/admin";
+import { CustomImportButton } from "@/components/custom/ImportButton";
+
+const ListActions = (props: any) => {
+  return (
+    <div className="flex gap-2 mb-4">
+      <CreateButton />
+      <CustomImportButton resource="questions" />
+    </div>
+  );
+};
 
 export const QuestionList = () => (
-  <List>
+  <List actions={<ListActions />}>
     <DataTable>
       <DataTable.Col source="id" />
       <DataTable.Col source="question_text" />
       <DataTable.Col source="question_type" />
+      <DataTable.Col source="exam_session_id">
+        <ReferenceField source="exam_session_id" reference="exam_session">
+          <TextField source="session_name" />
+        </ReferenceField>
+      </DataTable.Col>
       <DataTable.Col source="options" />
       <DataTable.Col source="correct_answer" />
       <DataTable.Col source="explanation" />
       <DataTable.Col source="subject_id">
         <ReferenceField source="subject_id" reference="subjects" />
       </DataTable.Col>
-      <DataTable.Col source="year_id">
-        <ReferenceField source="year_id" reference="years" />
-      </DataTable.Col>
-      <DataTable.Col source="topics">
-        <ArrayField source="topics" />
-      </DataTable.Col>
+
+      <DataTable.Col source="topics" />
       <DataTable.Col source="difficulty" />
       <DataTable.Col source="is_active">
         <BooleanField source="is_active" />

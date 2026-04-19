@@ -23,6 +23,7 @@ import ShowProfiles from "./pages/profiles/ShowProfiles";
 import EditExam from "./pages/exams/EditExam";
 import ListBundles from "./pages/bundles/ListBundles";
 import ListBundleQuestion from "./pages/bundle_question/ListBundleQuestion";
+import { CreateGuesser } from "ra-supabase";
 
 const instanceUrl = import.meta.env.VITE_SUPABASE_URL;
 const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -95,6 +96,7 @@ export const App = () => (
       <Resource
         name="subjects"
         list={<SubjectList />}
+        create={CreateGuesser}
         hasEdit={true}
         hasShow={true}
         edit={<EditSubject />}

@@ -65,6 +65,28 @@ export const createDataProvider = (
           return target.getList(resource, params);
         };
       }
+      // In your dataProvider proxy, add this handler:
+      if (prop === "createMany") {
+        return async (resource: string, params: any) => {
+          const { data } = params;
+
+          // Insert in batches of 50 to avoid timeouts
+          const batchSize = 50;
+          let allResults: any = [];
+
+          for (let i = 0; i < data.length; i += batchSize) {
+            const batch = data.slice(i, i + batchSize);
+            const results = await Promise.all(
+              batch.map((record: any) =>
+                target.create(resource, { data: record }),
+              ),
+            );
+            allResults = [...allResults, ...results];
+          }
+
+          return { data: allResults };
+        };
+      }
 
       // For other methods (getOne, update, etc.), pass through
       return target[prop as keyof typeof target];

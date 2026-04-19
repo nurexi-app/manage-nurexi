@@ -38,6 +38,7 @@
     "lodash": "^4.17.23",
     "lucide-react": "^0.568.0",
     "next-themes": "^0.4.6",
+    "papaparse": "^5.5.3",
     "query-string": "^9.3.1",
     "ra-core": "^5.14.2",
     "ra-i18n-polyglot": "^5.14.2",
@@ -60,6 +61,7 @@
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@types/node": "^20.10.7",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.4",

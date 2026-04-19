@@ -86,6 +86,7 @@ export const LoginPage = (props: { redirectTo?: string }) => {
                 label="Password"
                 source="password"
                 type="password"
+                autoComplete="new-password"
                 validate={required()}
               />
               <Button

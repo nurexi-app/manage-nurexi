@@ -1,4 +1,10 @@
-import { RecordField, ReferenceField, TextField } from "@/components/admin";
+import {
+  ArrayInput,
+  RecordField,
+  ReferenceField,
+  SimpleFormIterator,
+  TextField,
+} from "@/components/admin";
 import { AutocompleteInput } from "@/components/admin/autocomplete-input";
 import { BooleanInput } from "@/components/admin/boolean-input";
 import { Edit } from "@/components/admin/edit";
@@ -24,7 +30,11 @@ const QuestionEdit = () => (
       <TextInput source="difficulty" />
       <BooleanInput source="is_active" />
       <TextInput source="options" />
-      <TextInput source="topics" />
+      <ArrayInput source="topics" label="Topics">
+        <SimpleFormIterator>
+          <TextInput source="" label="Topic" />
+        </SimpleFormIterator>
+      </ArrayInput>
     </SimpleForm>
   </Edit>
 );
