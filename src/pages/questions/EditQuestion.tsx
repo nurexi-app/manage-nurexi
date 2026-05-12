@@ -1,6 +1,6 @@
 import {
   ArrayInput,
-  RecordField,
+  DateField,
   ReferenceField,
   SimpleFormIterator,
   TextField,
@@ -15,8 +15,8 @@ import { TextInput } from "@/components/admin/text-input";
 const QuestionEdit = () => (
   <Edit>
     <SimpleForm>
-      <TextInput source="id" />
-      <TextInput source="created_at" />
+      {/* <TextInput source="id" /> */}
+      <DateField source="created_at" />
       <ReferenceField source="exam_session_id" reference="exam_session">
         <TextField source="session_name" />
       </ReferenceField>

@@ -24,6 +24,7 @@ import EditExam from "./pages/exams/EditExam";
 import ListBundles from "./pages/bundles/ListBundles";
 import ListBundleQuestion from "./pages/bundle_question/ListBundleQuestion";
 import { CreateGuesser } from "ra-supabase";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 const instanceUrl = import.meta.env.VITE_SUPABASE_URL;
 const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -68,6 +69,7 @@ export const App = () => (
       authProvider={authProvider}
       layout={Layout}
       loginPage={LoginPage}
+      dashboard={Dashboard}
     >
       <Resource
         name="profiles"

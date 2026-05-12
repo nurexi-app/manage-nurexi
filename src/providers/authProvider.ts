@@ -13,6 +13,7 @@ export const createAuthProvider = (
   // Store user info
   let userRoles: string[] = [];
   let currentUserId: string | null = null;
+  let full_name: string = "";
 
   // Function to fetch user profile data
   const fetchUserProfile = async () => {
@@ -24,11 +25,12 @@ export const createAuthProvider = (
       currentUserId = user.id;
       const { data: profile } = await supabaseClient
         .from("profiles")
-        .select("roles")
+        .select("roles,full_name")
         .eq("id", user.id)
         .single();
 
       userRoles = profile?.roles || [];
+      full_name = profile?.full_name!;
     }
   };
 
@@ -65,7 +67,7 @@ export const createAuthProvider = (
 
       return {
         id: currentUserId as string,
-        fullName: currentUserId,
+        fullName: full_name,
         roles: userRoles,
       };
     },
