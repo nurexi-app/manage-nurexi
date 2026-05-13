@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { BrowserRouter } from "react-router";
 import ProfileList from "./pages/profiles/profile-list";
 import { Admin, Layout, LoginPage } from "./components/admin";
-import { Users } from "lucide-react";
+import { Users, Wallpaper } from "lucide-react";
 import { Resource } from "ra-core";
 import { ProfileEdit } from "./pages/profiles/profile-edit";
 import { QuestionList } from "./pages/questions/question-list";
@@ -83,6 +83,7 @@ export const App = () => (
         list={<ExamSessionList />}
         edit={<ExamSessionEdit />}
         create={<ExamSessionCreate />}
+        icon={Wallpaper}
       />
       <Resource name="bundles" list={<ListBundles />} />
       <Resource name="bundle_questions" list={<ListBundleQuestion />} />
