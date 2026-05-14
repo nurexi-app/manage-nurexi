@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { BrowserRouter } from "react-router";
 import ProfileList from "./pages/profiles/profile-list";
 import { Admin, Layout, LoginPage } from "./components/admin";
-import { Users, Wallpaper } from "lucide-react";
+import { ClipboardList, Users, Wallpaper } from "lucide-react";
 import { Resource } from "ra-core";
 import { ProfileEdit } from "./pages/profiles/profile-edit";
 import { QuestionList } from "./pages/questions/question-list";
@@ -99,7 +99,7 @@ export const App = () => (
       <Resource
         name="subjects"
         list={<SubjectList />}
-        create={CreateGuesser}
+        icon={ClipboardList}
         hasEdit={true}
         hasShow={true}
         edit={<EditSubject />}
