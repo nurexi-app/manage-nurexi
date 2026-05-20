@@ -38,7 +38,6 @@ export const QuestionList = () => (
     sort={{ field: "created_at", order: "DESC" }}
   >
     <DataTable>
-      <DataTable.Col source="id" />
       <DataTable.Col source="question_text" />
       <DataTable.Col source="question_type" />
       <DataTable.Col source="exam_session_id">
@@ -46,23 +45,17 @@ export const QuestionList = () => (
           <TextField source="session_name" />
         </ReferenceField>
       </DataTable.Col>
-      <DataTable.Col source="options" />
-      <DataTable.Col source="correct_answer" />
-      <DataTable.Col source="explanation" />
+
       <DataTable.Col source="subject_id">
         <ReferenceField source="subject_id" reference="subjects" />
       </DataTable.Col>
 
-      <DataTable.Col source="topics" />
       <DataTable.Col source="difficulty" />
       <DataTable.Col source="is_active">
         <BooleanField source="is_active" />
       </DataTable.Col>
       <DataTable.Col source="created_at">
         <DateField source="created_at" />
-      </DataTable.Col>
-      <DataTable.Col source="updated_at">
-        <DateField source="updated_at" />
       </DataTable.Col>
     </DataTable>
   </List>

@@ -10,7 +10,7 @@ import {
   SimpleFormIterator,
 } from "@/components/admin";
 
-import { required, FormDataConsumer } from "react-admin";
+import { required, FormDataConsumer, useGetIdentity } from "react-admin";
 const questionTypes = [
   { id: "mcq", name: "Multiple Choice (MCQ)" },
   { id: "true_false", name: "True / False" },
@@ -23,12 +23,28 @@ const difficultyChoices = [
   { id: "hard", name: "Hard" },
 ];
 
+const ADMIN_ROLE = import.meta.env.VITE_ROLE_ADMIN;
 export const QuestionCreate = () => {
+  const { data: identity } = useGetIdentity();
+
+  const transform = (data: any) => ({
+    ...data,
+    created_by: identity?.id,
+    is_active: data.is_active ?? true,
+  });
+
+  const roles: string[] = (identity?.roles as string[]) ?? [];
+  const isAdmin = roles.includes(ADMIN_ROLE);
   return (
-    <Create>
+    <Create transform={transform}>
       <SimpleForm>
         {/* Exam Session */}
-        <ReferenceInput source="exam_session_id" reference="exam_session">
+
+        <ReferenceInput
+          source="exam_session_id"
+          reference="exam_session"
+          filter={isAdmin ? {} : { created_by: identity?.id }}
+        >
           <AutocompleteInput validate={required()} optionText="session_name" />
         </ReferenceInput>
 

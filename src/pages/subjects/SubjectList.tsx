@@ -41,7 +41,7 @@ function SubjectCard({ isAdmin }: { isAdmin: boolean }) {
     id: record?.id,
     type: "edit",
   });
-  const DEFAULT_IMAGE = `https://placehold.co/400x200?text=${record?.name}`;
+  const DEFAULT_IMAGE = `https://placehold.co/400x200?text=${record?.name ?? "Subject"}`;
   const imageUrl = record?.image ?? DEFAULT_IMAGE;
   const isActive = record?.is_active ?? false;
 
