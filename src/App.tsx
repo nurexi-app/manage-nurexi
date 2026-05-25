@@ -23,7 +23,6 @@ import ShowProfiles from "./pages/profiles/ShowProfiles";
 import EditExam from "./pages/exams/EditExam";
 import ListBundles from "./pages/bundles/ListBundles";
 import ListBundleQuestion from "./pages/bundle_question/ListBundleQuestion";
-import { CreateGuesser } from "ra-supabase";
 import Dashboard from "./pages/dashboard/Dashboard";
 
 const instanceUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -33,34 +32,17 @@ const supabaseClient = createClient<Database>(instanceUrl, apiKey);
 // Create auth provider first
 const authProvider = createAuthProvider(supabaseClient, instanceUrl, apiKey);
 
-// Setup functions to get user state from auth provider
-let currentUserId: string | null = null;
-let currentUserRoles: string[] = [];
-
-// This will be called after auth provider initializes
-const getCurrentUserId = () => currentUserId;
-const getUserRoles = () => currentUserRoles;
-
 // Create data provider with access to user state
 const dataProvider = createDataProvider(
   supabaseClient,
   instanceUrl,
   apiKey,
-  getCurrentUserId,
-  getUserRoles,
+  () =>
+    authProvider.getIdentity() as Promise<{
+      id: string;
+      roles: string[];
+    } | null>,
 );
-
-// Helper to sync user state from auth provider
-const syncUserState = async () => {
-  const identity = await authProvider.getIdentity();
-  if (identity) {
-    currentUserId = identity.id as string;
-    currentUserRoles = identity.roles as string[];
-  }
-};
-
-// Initialize user state
-syncUserState();
 
 export const App = () => (
   <BrowserRouter>

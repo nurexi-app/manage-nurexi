@@ -7,8 +7,10 @@ export const createDataProvider = (
   supabaseClient: SupabaseClient<Database>,
   instanceUrl: string,
   apiKey: string,
-  getCurrentUserId: () => string | null,
-  getUserRoles: () => string[],
+  // Instead of getter functions that may return stale values,
+  // we accept a function that returns a Promise — this forces
+  // fresh identity resolution on every getList call.
+  getIdentity: () => Promise<{ id: string; roles: string[] } | null>,
 ) => {
   const baseDataProvider = supabaseDataProvider({
     instanceUrl,
@@ -18,59 +20,52 @@ export const createDataProvider = (
 
   return new Proxy(baseDataProvider, {
     get(target, prop) {
-      // Intercept getList calls
       if (prop === "getList") {
         return async (resource: string, params: any) => {
-          const userRoles = getUserRoles();
-          const currentUserId = getCurrentUserId();
+          // Always await fresh identity — never rely on pre-populated variables
+          const identity = await getIdentity();
+          const userRoles: string[] = identity?.roles ?? [];
+          const currentUserId: string | null = identity?.id ?? null;
 
-          // , filter exam_session and questions by user ID
           if (userRoles.includes(ROLES.SUPER_EDUCATOR)) {
             if (resource === "exam_session") {
-              const filter = {
-                ...params.filter,
-                created_by: currentUserId,
-              };
-              return target.getList(resource, { ...params, filter });
+              return target.getList(resource, {
+                ...params,
+                filter: { ...params.filter, created_by: currentUserId },
+              });
             }
 
             if (resource === "questions") {
-              const filter = {
-                ...params.filter,
-                created_by: currentUserId,
-              };
-              return target.getList(resource, { ...params, filter });
-            }
-
-            if (resource === "exams") {
-              return target.getList(resource, params);
-            }
-            if (resource === "subjects") {
-              return target.getList(resource, params);
+              return target.getList(resource, {
+                ...params,
+                filter: { ...params.filter, created_by: currentUserId },
+              });
             }
 
             if (resource === "profiles") {
-              const filter = {
-                ...params.filter,
-                id: currentUserId,
-              };
-              return target.getList(resource, { ...params, filter });
+              return target.getList(resource, {
+                ...params,
+                filter: { ...params.filter, id: currentUserId },
+              });
             }
 
-            // For all other resources - deny access
+            // exams and subjects — visible to super-educator, no filter
+            if (resource === "exams" || resource === "subjects") {
+              return target.getList(resource, params);
+            }
+
+            // everything else — deny
             return { data: [], total: 0 };
           }
 
-          // For admin, return all data
+          // admin — full access
           return target.getList(resource, params);
         };
       }
-      // In your dataProvider proxy, add this handler:
+
       if (prop === "createMany") {
         return async (resource: string, params: any) => {
           const { data } = params;
-
-          // Insert in batches of 50 to avoid timeouts
           const batchSize = 50;
           let allResults: any = [];
 
@@ -88,7 +83,6 @@ export const createDataProvider = (
         };
       }
 
-      // For other methods (getOne, update, etc.), pass through
       return target[prop as keyof typeof target];
     },
   });

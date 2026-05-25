@@ -496,7 +496,7 @@ export const LoginPage = (props: { redirectTo?: string }) => {
                   label="Password"
                   source="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="off"
                   validate={required()}
                 />
               </div>

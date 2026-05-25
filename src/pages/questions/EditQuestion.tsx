@@ -100,7 +100,6 @@ function OptionsInput() {
 function CorrectAnswerInput() {
   const questionType = useWatch({ name: "question_type" });
   const options = useWatch({ name: "options" }) ?? [];
-
   if (questionType === "true_false") {
     return (
       <SelectInput
@@ -115,10 +114,8 @@ function CorrectAnswerInput() {
   if (questionType === "mcq") {
     // Safely parse the 'text' key from your options jsonb structure
     const choices = options
-      .filter(
-        (o: any) => o && typeof o.text === "string" && o.text.trim() !== "",
-      )
-      .map((opt: any) => ({ id: opt.text, name: opt.text }));
+      .filter((o: any) => o && typeof o === "string" && o.trim() !== "")
+      .map((opt: any) => ({ id: opt, name: opt }));
 
     return choices.length > 0 ? (
       <SelectInput
