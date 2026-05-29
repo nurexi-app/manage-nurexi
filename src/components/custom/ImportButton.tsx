@@ -13,8 +13,6 @@ import {
   useDataProvider,
   useRefresh,
   useGetIdentity,
-  Form,
-  useInput,
   useGetList,
 } from "react-admin";
 import Papa from "papaparse";
@@ -181,7 +179,7 @@ export const CustomImportButton = ({ resource }: { resource: string }) => {
                   topics: topics,
                   created_by: identity?.id,
                   exam_session_id: selectedSessionId,
-                  // subject_id left as null for now
+                  subject_id: row.subject_id || null,
                 },
               });
               successCount++;
@@ -220,8 +218,10 @@ export const CustomImportButton = ({ resource }: { resource: string }) => {
     });
   };
   const downloadTemplate = () => {
-    const template = `question_text,question_type,options,correct_answer,explanation,difficulty
-What is your question?,mcq,"Option A,Option B,Option C,Option D",Correct Answer,Explanation here,medium`;
+    const template = `question_text,question_type,options,correct_answer,explanation,difficulty,subject_id,topics
+"What is the normal resting heart rate for a healthy adult?",mcq,"60-100 bpm,40-60 bpm,100-120 bpm,120-140 bpm",60-100 bpm,"The normal resting heart rate for adults ranges from 60 to 100 beats per minute. Athletes may have lower rates around 40-60 bpm.",easy,1,"[""Cardiovascular"",""Vital Signs""]"
+"True or False: The left ventricle pumps blood to the lungs.",true_false,"True,False",False,"The right ventricle pumps blood to the lungs. The left ventricle pumps oxygenated blood to the rest of the body.",medium,1,"[""Cardiovascular"",""Heart Anatomy""]"
+"The functional unit of the kidney is the ______.",short_answer,"",Nephron,"The nephron is the microscopic structural and functional unit of the kidney responsible for filtering blood and forming urine.",hard,1,"[""Renal System"",""Nephron""]"`;
 
     const blob = new Blob([template], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -245,10 +245,18 @@ What is your question?,mcq,"Option A,Option B,Option C,Option D",Correct Answer,
           {loading && <LinearProgress sx={{ mb: 2 }} />}
 
           {/* Download Template Button */}
-          <Button onClick={downloadTemplate} size="small" sx={{ mb: 2 }}>
+          <Button onClick={downloadTemplate} size="small" sx={{ mb: 1 }}>
             Download CSV Template
           </Button>
-
+          <Button size="small" sx={{ display: "block", mb: 2 }}>
+            <a
+              href="https://www.loom.com/share/56f37f499650420b8495b319173db7d2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              How to import questions in bulk
+            </a>
+          </Button>
           {/* Exam Session Selection - Using custom selector instead of ReferenceInput */}
           <div style={{ marginBottom: "20px" }}>
             <label
@@ -286,9 +294,10 @@ What is your question?,mcq,"Option A,Option B,Option C,Option D",Correct Answer,
             <small
               style={{ color: "#666", display: "block", marginTop: "8px" }}
             >
-              Required columns: question_text, question_type, correct_answer
+              Required columns: question_text, question_type, subject_id
+              correct_answer,options, explanation,
               <br />
-              Optional: options, explanation, difficulty, is_active, topics
+              Optional: difficulty, is_active, topics
             </small>
           </div>
 

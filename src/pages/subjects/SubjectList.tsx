@@ -100,13 +100,17 @@ function SubjectCard({ isAdmin }: { isAdmin: boolean }) {
               {record.description}
             </p>
           )}
-          <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground pt-0.5">
-            <ReferenceManyCount
-              reference="questions"
-              target="subject_id"
-              link
-            />
-            <span>questions</span>
+          <div className="flex items-center justify-between text-[12px] text-muted-foreground pt-0.5">
+            <div className="flex items-center  gap-1.5">
+              <ReferenceManyCount
+                reference="questions"
+                target="subject_id"
+                link
+              />
+              <span>questions</span>
+            </div>
+
+            <p className="text-xs text-muted-foreground">id:{record?.id}</p>
           </div>
         </div>
       </div>
