@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { BrowserRouter } from "react-router";
 import ProfileList from "./pages/profiles/profile-list";
 import { Admin, Layout, LoginPage } from "./components/admin";
-import { ClipboardList, Users, Wallpaper } from "lucide-react";
+import { BookOpen, ClipboardList, Users, Wallpaper } from "lucide-react";
 import { Resource } from "ra-core";
 import { ProfileEdit } from "./pages/profiles/profile-edit";
 import { QuestionList } from "./pages/questions/question-list";
@@ -24,6 +24,9 @@ import EditExam from "./pages/exams/EditExam";
 import ListBundles from "./pages/bundles/ListBundles";
 import ListBundleQuestion from "./pages/bundle_question/ListBundleQuestion";
 import Dashboard from "./pages/dashboard/Dashboard";
+import { ResourceList } from "./pages/resources/ResourceList";
+import { ResourceCreate } from "./pages/resources/ResourceCreate";
+import { ResourceEdit } from "./pages/resources/ResourceEdit";
 
 const instanceUrl = import.meta.env.VITE_SUPABASE_URL;
 const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -86,6 +89,14 @@ export const App = () => (
         hasShow={true}
         edit={<EditSubject />}
         show={<ShowSubject />}
+      />
+      <Resource
+        name="resources"
+        list={<ResourceList />}
+        create={<ResourceCreate />}
+        edit={<ResourceEdit />}
+        icon={BookOpen}
+        options={{ label: "Resource Centre" }}
       />
       {/* <Resource name="purchases" list={ListGuesser} /> */}
     </Admin>

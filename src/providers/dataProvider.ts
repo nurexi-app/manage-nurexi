@@ -1,3 +1,10 @@
+// src/providers/dataProvider.ts
+// Fix: roles are no longer checked as mutually exclusive "first match wins"
+// blocks. Instead, each RESOURCE checks whether the user has the role that
+// applies to *it specifically*. A user with multiple roles (e.g. both
+// super-educator and contributor) now gets correct access to both areas
+// instead of being trapped in whichever role's block happens to come first.
+
 import { supabaseDataProvider } from "ra-supabase";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../lib/types/supabase";
@@ -7,9 +14,6 @@ export const createDataProvider = (
   supabaseClient: SupabaseClient<Database>,
   instanceUrl: string,
   apiKey: string,
-  // Instead of getter functions that may return stale values,
-  // we accept a function that returns a Promise — this forces
-  // fresh identity resolution on every getList call.
   getIdentity: () => Promise<{ id: string; roles: string[] } | null>,
 ) => {
   const baseDataProvider = supabaseDataProvider({
@@ -22,44 +26,76 @@ export const createDataProvider = (
     get(target, prop) {
       if (prop === "getList") {
         return async (resource: string, params: any) => {
-          // Always await fresh identity — never rely on pre-populated variables
           const identity = await getIdentity();
           const userRoles: string[] = identity?.roles ?? [];
           const currentUserId: string | null = identity?.id ?? null;
 
-          if (userRoles.includes(ROLES.SUPER_EDUCATOR)) {
-            if (resource === "exam_session") {
+          const isAdmin = userRoles.includes(ROLES.ADMIN);
+          const isSuperEducator = userRoles.includes(ROLES.SUPER_EDUCATOR);
+          const isContributor = userRoles.includes(ROLES.CONTRIBUTOR);
+
+          // ── admin — full access, short-circuit everything else ────────────
+          if (isAdmin) {
+            return target.getList(resource, params);
+          }
+
+          // ── resources — contributor-owned resource ─────────────────────────
+          // Checked independently of other roles. A user can be BOTH a
+          // super-educator AND a contributor — this must not be an
+          // either/or branch.
+          if (resource === "resources") {
+            if (isContributor) {
               return target.getList(resource, {
                 ...params,
                 filter: { ...params.filter, created_by: currentUserId },
               });
             }
+            return { data: [], total: 0 };
+          }
 
-            if (resource === "questions") {
+          // ── exam_session — super-educator-owned resource ───────────────────
+          if (resource === "exam_session") {
+            if (isSuperEducator) {
               return target.getList(resource, {
                 ...params,
                 filter: { ...params.filter, created_by: currentUserId },
               });
             }
+            return { data: [], total: 0 };
+          }
 
-            if (resource === "profiles") {
+          // ── questions — super-educator-owned resource ──────────────────────
+          if (resource === "questions") {
+            if (isSuperEducator) {
+              return target.getList(resource, {
+                ...params,
+                filter: { ...params.filter, created_by: currentUserId },
+              });
+            }
+            return { data: [], total: 0 };
+          }
+
+          // ── profiles — super-educator sees only their own profile ──────────
+          if (resource === "profiles") {
+            if (isSuperEducator) {
               return target.getList(resource, {
                 ...params,
                 filter: { ...params.filter, id: currentUserId },
               });
             }
-
-            // exams and subjects — visible to super-educator, no filter
-            if (resource === "exams" || resource === "subjects") {
-              return target.getList(resource, params);
-            }
-
-            // everything else — deny
             return { data: [], total: 0 };
           }
 
-          // admin — full access
-          return target.getList(resource, params);
+          // ── exams / subjects — visible to super-educators, unfiltered ──────
+          if (resource === "exams" || resource === "subjects") {
+            if (isSuperEducator) {
+              return target.getList(resource, params);
+            }
+            return { data: [], total: 0 };
+          }
+
+          // ── anything else — deny by default ─────────────────────────────────
+          return { data: [], total: 0 };
         };
       }
 

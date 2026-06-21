@@ -10,12 +10,14 @@ export const createAuthProvider = (
 ) => {
   const baseAuthProvider = supabaseAuthProvider(supabaseClient, {});
 
-  // Store user info
   let userRoles: string[] = [];
   let currentUserId: string | null = null;
   let full_name: string = "";
 
-  // Function to fetch user profile data
+  // de-dupes concurrent fetches so canAccess + getIdentity firing
+  // at the same time don't trigger two separate DB calls
+  let profileFetchPromise: Promise<void> | null = null;
+
   const fetchUserProfile = async () => {
     const {
       data: { user },
@@ -30,8 +32,25 @@ export const createAuthProvider = (
         .single();
 
       userRoles = profile?.roles || [];
-      full_name = profile?.full_name!;
+      full_name = profile?.full_name ?? "";
+    } else {
+      currentUserId = null;
+      userRoles = [];
+      full_name = "";
     }
+  };
+
+  // call this at the START of canAccess / getIdentity — guarantees
+  // userRoles is populated before any role check runs
+  const ensureProfileLoaded = async () => {
+    if (currentUserId && userRoles.length > 0) return;
+
+    if (!profileFetchPromise) {
+      profileFetchPromise = fetchUserProfile().finally(() => {
+        profileFetchPromise = null;
+      });
+    }
+    await profileFetchPromise;
   };
 
   return {
@@ -44,12 +63,13 @@ export const createAuthProvider = (
     logout: async (params: any) => {
       userRoles = [];
       currentUserId = null;
+      full_name = "";
       return baseAuthProvider.logout(params);
     },
 
     checkAuth: async (params: any) => {
       const result = await baseAuthProvider.checkAuth(params);
-      await fetchUserProfile();
+      await ensureProfileLoaded();
       return result;
     },
 
@@ -57,12 +77,10 @@ export const createAuthProvider = (
     getPermissions: baseAuthProvider.getPermissions,
 
     getIdentity: async () => {
-      if (!currentUserId) {
-        await fetchUserProfile();
+      await ensureProfileLoaded();
 
-        if (!currentUserId) {
-          throw new Error("User not authenticated");
-        }
+      if (!currentUserId) {
+        throw new Error("User not authenticated");
       }
 
       return {
@@ -77,17 +95,17 @@ export const createAuthProvider = (
       resource: string;
       record?: any;
     }) => {
-      const { action, resource, record } = params;
+      // ← THE FIX — guarantee roles are loaded before checking anything
+      await ensureProfileLoaded();
 
-      // Admin has access to everything
+      const { resource, record } = params;
+
       if (userRoles.includes(ROLES.ADMIN)) {
         return true;
       }
 
       if (userRoles.includes(ROLES.SUPER_EDUCATOR)) {
-        // For listing resources (no record yet) - allow access but will filter in dataProvider
         if (!record) {
-          // Allow access to exam_session, exams, and questions for listing
           if (
             resource === "exam_session" ||
             resource === "exams" ||
@@ -96,25 +114,25 @@ export const createAuthProvider = (
           ) {
             return true;
           }
-          return false;
+          // don't return false here unconditionally — fall through
+          // so a user who is ALSO a contributor can still pass below
+        } else {
+          if (resource === "exam_session" || resource === "questions") {
+            return (
+              record.created_by === currentUserId ||
+              record.user_id === currentUserId
+            );
+          }
         }
+      }
 
-        // For specific records (edit, show, delete)
-        if (resource === "exam_session") {
-          return (
-            record.created_by === currentUserId ||
-            record.user_id === currentUserId
-          );
+      // contributor — resources only — checked independently,
+      // NOT as an else-if, so dual-role users aren't blocked
+      if (userRoles.includes(ROLES.CONTRIBUTOR)) {
+        if (resource === "resources") {
+          if (!record) return true;
+          return record.created_by === currentUserId;
         }
-
-        if (resource === "questions") {
-          return (
-            record.created_by === currentUserId ||
-            record.user_id === currentUserId
-          );
-        }
-
-        return false;
       }
 
       return false;
