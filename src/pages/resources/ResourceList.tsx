@@ -9,8 +9,9 @@ import { List } from "@/components/admin/list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, CheckCircle2, FileText, Pencil, Globe } from "lucide-react";
+import { Clock, CheckCircle2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import DropDownOptions from "./DropDownOptions";
 
 const ADMIN_ROLE = import.meta.env.VITE_ROLE_ADMIN;
 
@@ -88,8 +89,13 @@ function ResourceCard({
     });
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-sm transition-shadow">
+    <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-sm relative transition-shadow">
       {/* cover image strip */}
+
+      <div className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/80 hover:scale-110 transition-all duration-300 ease-in-out z-50">
+        <DropDownOptions resource={resource} />
+      </div>
+
       {resource.cover_image_url ? (
         <div className="h-28 overflow-hidden">
           <img
@@ -140,33 +146,6 @@ function ResourceCard({
 
         {/* actions */}
         <div className="flex items-center gap-2 pt-1 border-t border-border/50 flex-wrap">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 gap-1 text-[12px]"
-            onClick={() => redirect("edit", "resources", resource.id)}
-          >
-            <Pencil className="h-3 w-3" />
-            Edit
-          </Button>
-
-          {resource.status === "published" && (
-            <a
-              href={`${import.meta.env.VITE_PUBLIC_APP_URL}/resources/${resource.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 gap-1 text-[12px]"
-              >
-                <Globe className="h-3 w-3" />
-                View live
-              </Button>
-            </a>
-          )}
-
           {/* admin-only approval controls */}
           {isAdmin && (
             <>

@@ -146,6 +146,13 @@
   margin-bottom: 0.5rem !important;
 }
 
+.tiptap p {
+  font-size: 1rem;
+  line-height: 20px;
+  margin-bottom: 1.25rem;
+  color: #333333;
+}
+
 .tiptap li p {
   margin-top: 0.25rem !important;
   margin-bottom: 0.25rem !important;
