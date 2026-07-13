@@ -311,6 +311,18 @@ function QuestionShowLayout() {
             </p>
           </div>
         )}
+
+        {record?.rich_explanation && (
+          <div className="mt-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+            <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+              <Lightbulb className="h-3 w-3" />
+              Rich Explanation
+            </div>
+            <p className="text-[13px] text-foreground leading-relaxed">
+              {record.rich_explanation}
+            </p>
+          </div>
+        )}
       </Section>
 
       {/* ── section 4: topics ── */}

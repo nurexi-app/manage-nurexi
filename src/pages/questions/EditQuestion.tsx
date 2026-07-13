@@ -1,6 +1,11 @@
-import { required, SimpleFormIterator, useGetIdentity } from "react-admin";
+import {
+  required,
+  SimpleFormIterator,
+  useGetIdentity,
+  useRecordContext,
+} from "react-admin";
 import { useWatch, useFormContext } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { HelpCircle, BookOpen, Tag, CheckCircle2 } from "lucide-react";
 import {
@@ -13,6 +18,7 @@ import {
   SimpleForm,
   TextInput,
 } from "@/components/admin";
+import ExplanationEditor from "@/components/ExplanationEditor";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -148,6 +154,18 @@ function CorrectAnswerInput() {
 // ─── main edit ────────────────────────────────────────────────────────────────
 
 const QuestionEdit = () => {
+  const record = useRecordContext();
+  const [richExplanation, setRichExplanation] = useState<any>(
+    record?.rich_explanation ?? null,
+  );
+
+  // Seed once when record loads:
+  useEffect(() => {
+    if (record?.rich_explanation && !richExplanation) {
+      setRichExplanation(record.rich_explanation);
+    }
+  }, [record]);
+
   const { data: identity } = useGetIdentity();
   const roles: string[] = (identity?.roles as string[]) ?? [];
   const isAdmin = roles.includes(ADMIN_ROLE);
@@ -216,6 +234,12 @@ const QuestionEdit = () => {
             label="Explanation"
             multiline
             rows={2}
+          />
+
+          <ExplanationEditor
+            content={richExplanation}
+            plainText={record?.explanation} // ← enables one-click migration button
+            onChange={setRichExplanation}
           />
         </FormSection>
 

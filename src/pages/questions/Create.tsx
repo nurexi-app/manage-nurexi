@@ -12,6 +12,8 @@ import { required, useGetIdentity } from "react-admin";
 import { useWatch } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
 import { HelpCircle, BookOpen, Tag, CheckCircle2 } from "lucide-react";
+import ExplanationEditor from "@/components/ExplanationEditor";
+import { useState } from "react";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -139,6 +141,8 @@ function OptionsInput() {
 // ─── main create ──────────────────────────────────────────────────────────────
 
 export const QuestionCreate = () => {
+  const [richExplanation, setRichExplanation] = useState<any>(null);
+
   const { data: identity } = useGetIdentity();
 
   const roles: string[] = (identity?.roles as string[]) ?? [];
@@ -150,6 +154,7 @@ export const QuestionCreate = () => {
     ...data,
     created_by: userId,
     is_active: data.is_active ?? true,
+    rich_explanation: richExplanation ?? null,
   });
 
   return (
@@ -218,6 +223,27 @@ export const QuestionCreate = () => {
             multiline
             rows={2}
           />
+
+          {/* new rich explanation editor */}
+          <div className="w-full space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Rich Explanation
+              </label>
+              <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-medium">
+                New
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Rich explanations support bold, headings, bullet points, YouTube
+              embeds and more. Learners see this instead of the plain text
+              above.
+            </p>
+            <ExplanationEditor
+              content={richExplanation}
+              onChange={setRichExplanation}
+            />
+          </div>
         </FormSection>
 
         {/* ── section 4: topics ── */}
