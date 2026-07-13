@@ -14,7 +14,7 @@ export default function DropDownOptions({ resource }: { resource: any }) {
 
   const shareData = {
     title: `Resource: ${resource?.title}`,
-    text: `Check out this latest publication by ${resource?.author?.author_name} on Nurexi. It explores key insights into ${resource?.title}.`,
+    text: `Check out this latest post on Nurexi. It explores key insights into ${resource?.title}.`,
     url: `https://nurexi.com/resources/${resource?.slug}`,
   };
 

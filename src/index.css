@@ -127,23 +127,32 @@
 }
 
 /* Tiptap Core & Tailwind Typography Overrides */
-.tiptap.prose {
+.tiptap.prose,
+.tiptap-question.prose {
   outline: none;
 }
 
 /* Fix list formatting padding and styles inside Tiptap */
-.tiptap ul {
+.tiptap ul,
+.tiptap-question ul {
   list-style-type: disc !important;
   padding-left: 1.25rem !important;
   margin-top: 0.5rem !important;
   margin-bottom: 0.5rem !important;
 }
 
-.tiptap ol {
+.tiptap ol,
+.tiptap-question ol {
   list-style-type: decimal !important;
   padding-left: 1.25rem !important;
   margin-top: 0.5rem !important;
   margin-bottom: 0.5rem !important;
+}
+
+.tiptap-question p {
+  font-size: 1rem;
+  line-height: 20px;
+  margin-bottom: 0.35rem;
 }
 
 .tiptap p {
@@ -152,7 +161,8 @@
   margin-bottom: 1.25rem;
 }
 
-.tiptap li p {
+.tiptap li p,
+.tiptap-question li p {
   margin-top: 0.25rem !important;
   margin-bottom: 0.25rem !important;
 }
@@ -168,7 +178,8 @@
 }
 
 /* Style Blockquotes */
-.tiptap blockquote {
+.tiptap blockquote,
+.tiptap-question blockquote {
   border-left: 3px solid var(--border);
   padding-left: 1rem;
   font-style: italic;
@@ -186,14 +197,16 @@
 }
 
 /* Make Youtube Embeds Responsive inside the editor viewport */
-.tiptap iframe {
+.tiptap iframe,
+.tiptap-question iframe {
   max-width: 100%;
   border-radius: 0.5rem;
   margin: 1rem 0;
 }
 
 /* Custom Headings Styling inside the Editor */
-.tiptap.prose h1 {
+.tiptap.prose h1,
+.tiptap-question.prose h1 {
   font-size: 1.5rem !important; /* Adjust sizes smoothly for prose-sm */
   font-weight: 700;
   margin-top: 1.5rem !important;
