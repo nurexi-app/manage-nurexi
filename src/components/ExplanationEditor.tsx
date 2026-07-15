@@ -538,7 +538,7 @@ export default function ExplanationEditor({
       {/* ══ BUBBLE MENU ══════════════════════════════════════════════════════ */}
       <BubbleMenu
         editor={editor}
-        options={{ placement: "top" }}
+        options={{ placement: "bottom" }}
         shouldShow={({ state }) => {
           const { from, to } = state.selection;
           return from !== to;

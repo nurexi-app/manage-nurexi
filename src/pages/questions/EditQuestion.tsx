@@ -185,7 +185,14 @@ function RichExplanationField({
         Learners see this instead of the plain text explanation above. Leave
         blank to keep the plain text explanation.
       </p>
-
+      <a
+        href="https://clipy.online/video/lggrc9j4zwlf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-orange-500 underline my-2 block"
+      >
+        learn how to use Rich Explanation features
+      </a>
       <ExplanationEditor
         content={existingRich}
         plainText={plainExplanation}

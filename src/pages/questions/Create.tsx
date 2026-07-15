@@ -226,6 +226,14 @@ export const QuestionCreate = () => {
 
           {/* new rich explanation editor */}
           <div className="w-full space-y-2">
+            <a
+              href="https://clipy.online/video/lggrc9j4zwlf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-500 underline my-2 block"
+            >
+              learn how to use Rich Explanation features
+            </a>
             <div className="flex items-center justify-between">
               <label className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Rich Explanation
