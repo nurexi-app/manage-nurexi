@@ -1,3 +1,7 @@
+// src/pages/questions/QuestionEdit.tsx
+// Standard react-admin edit — all fields driven by source as normal.
+// Only rich_explanation needs custom state since it's a Tiptap editor.
+
 import {
   required,
   SimpleFormIterator,
@@ -19,8 +23,6 @@ import {
   TextInput,
 } from "@/components/admin";
 import ExplanationEditor from "@/components/ExplanationEditor";
-
-// ─── constants ────────────────────────────────────────────────────────────────
 
 const ADMIN_ROLE = import.meta.env.VITE_ROLE_ADMIN;
 
@@ -66,32 +68,26 @@ function FormSection({
   );
 }
 
-// ─── state cleaner component ─────────────────────────────────────────────────
+// ─── clears dependent fields when question type changes ───────────────────────
 
 function FormStateCleaner() {
   const { setValue } = useFormContext();
   const questionType = useWatch({ name: "question_type" });
 
   useEffect(() => {
-    if (questionType !== "mcq") {
-      setValue("options", null); // Set to null to clear out jsonb nicely in Supabase
-    }
-    if (questionType === "short_answer") {
-      setValue("correct_answer", "");
-    } else if (questionType === "true_false") {
-      setValue("correct_answer", "true");
-    }
+    if (questionType !== "mcq") setValue("options", null);
+    if (questionType === "short_answer") setValue("correct_answer", "");
+    else if (questionType === "true_false") setValue("correct_answer", "true");
   }, [questionType, setValue]);
 
   return null;
 }
 
-// ─── dynamic options input ────────────────────────────────────────────────────
+// ─── options — only renders for mcq ──────────────────────────────────────────
 
 function OptionsInput() {
   const questionType = useWatch({ name: "question_type" });
   if (questionType !== "mcq") return null;
-
   return (
     <ArrayInput source="options" label="Answer Options" validate={required()}>
       <SimpleFormIterator inline>
@@ -101,11 +97,12 @@ function OptionsInput() {
   );
 }
 
-// ─── dynamic correct answer ───────────────────────────────────────────────────
+// ─── correct answer — adapts to question type ─────────────────────────────────
 
 function CorrectAnswerInput() {
   const questionType = useWatch({ name: "question_type" });
   const options = useWatch({ name: "options" }) ?? [];
+
   if (questionType === "true_false") {
     return (
       <SelectInput
@@ -118,7 +115,6 @@ function CorrectAnswerInput() {
   }
 
   if (questionType === "mcq") {
-    // Safely parse the 'text' key from your options jsonb structure
     const choices = options
       .filter((o: any) => o && typeof o === "string" && o.trim() !== "")
       .map((opt: any) => ({ id: opt, name: opt }));
@@ -151,32 +147,89 @@ function CorrectAnswerInput() {
   );
 }
 
+// ─── rich explanation field ───────────────────────────────────────────────────
+// This is the only field that needs custom state — all others use source.
+// useRecordContext() is safe here because this component renders inside
+// <Edit> which provides the record context.
+
+function RichExplanationField({
+  onChangeRich,
+}: {
+  onChangeRich: (json: any) => void;
+}) {
+  const record = useRecordContext();
+
+  // plain explanation from the record — used for the "convert" button
+  const plainExplanation = record?.explanation as string | undefined;
+  const existingRich = record?.rich_explanation;
+
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Rich Explanation
+        </label>
+        {!existingRich && (
+          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+            Optional · New
+          </span>
+        )}
+        {existingRich && (
+          <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+            ✓ Rich explanation set
+          </span>
+        )}
+      </div>
+      <p className="text-[11px] text-muted-foreground">
+        Supports bold, headings, bullet points, YouTube embeds and more.
+        Learners see this instead of the plain text explanation above. Leave
+        blank to keep the plain text explanation.
+      </p>
+      <a
+        href="https://clipy.online/video/lggrc9j4zwlf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-orange-500 underline my-2 block"
+      >
+        learn how to use Rich Explanation features
+      </a>
+      <ExplanationEditor
+        content={existingRich}
+        plainText={plainExplanation}
+        onChange={onChangeRich}
+      />
+    </div>
+  );
+}
+
 // ─── main edit ────────────────────────────────────────────────────────────────
 
 const QuestionEdit = () => {
-  const record = useRecordContext();
-  const [richExplanation, setRichExplanation] = useState<any>(
-    record?.rich_explanation ?? null,
-  );
-
-  // Seed once when record loads:
-  useEffect(() => {
-    if (record?.rich_explanation && !richExplanation) {
-      setRichExplanation(record.rich_explanation);
-    }
-  }, [record]);
-
   const { data: identity } = useGetIdentity();
   const roles: string[] = (identity?.roles as string[]) ?? [];
   const isAdmin = roles.includes(ADMIN_ROLE);
   const userId = identity?.id as string | undefined;
 
+  // rich_explanation state lives here — seeded via transform, not useRecordContext
+  // undefined = not yet decided by the editor (leave whatever is in DB)
+  // null = explicitly cleared
+  // object = new Tiptap JSON to save
+  const [richExplanation, setRichExplanation] = useState<any>(undefined);
+
+  const transform = (data: any) => {
+    const result: any = { ...data };
+    if (richExplanation !== undefined) {
+      result.rich_explanation = richExplanation;
+    }
+    return result;
+  };
+
   return (
-    <Edit>
+    <Edit transform={transform} actions={false}>
       <SimpleForm className="max-w-2xl space-y-2">
         <FormStateCleaner />
 
-        {/* ── section 1: context ── */}
+        {/* ── context ── */}
         <FormSection title="Context" icon={BookOpen}>
           <ReferenceInput
             source="exam_session_id"
@@ -189,7 +242,6 @@ const QuestionEdit = () => {
               label="Exam Session"
             />
           </ReferenceInput>
-
           <ReferenceInput source="subject_id" reference="subjects">
             <AutocompleteInput
               optionText="name"
@@ -199,7 +251,7 @@ const QuestionEdit = () => {
           </ReferenceInput>
         </FormSection>
 
-        {/* ── section 2: question ── */}
+        {/* ── question ── */}
         <FormSection title="Question" icon={HelpCircle}>
           <TextInput
             source="question_text"
@@ -208,7 +260,6 @@ const QuestionEdit = () => {
             rows={3}
             validate={required()}
           />
-
           <div className="grid grid-cols-2 gap-4">
             <SelectInput
               source="question_type"
@@ -225,25 +276,25 @@ const QuestionEdit = () => {
           </div>
         </FormSection>
 
-        {/* ── section 3: answer ── */}
+        {/* ── answer ── */}
         <FormSection title="Answer" icon={CheckCircle2}>
           <OptionsInput />
           <CorrectAnswerInput />
+
+          {/* plain explanation — source-driven as normal, untouched */}
           <TextInput
             source="explanation"
-            label="Explanation"
+            label="Explanation (plain text)"
             multiline
             rows={2}
+            helperText="Plain text shown to learners on older versions. Kept as-is for all existing questions."
           />
 
-          <ExplanationEditor
-            content={richExplanation}
-            plainText={record?.explanation} // ← enables one-click migration button
-            onChange={setRichExplanation}
-          />
+          {/* rich explanation — only field needing custom state */}
+          <RichExplanationField onChangeRich={setRichExplanation} />
         </FormSection>
 
-        {/* ── section 4: topics ── */}
+        {/* ── topics ── */}
         <FormSection title="Topics" icon={Tag}>
           <ArrayInput source="topics" label="Topics">
             <SimpleFormIterator inline>
@@ -252,7 +303,7 @@ const QuestionEdit = () => {
           </ArrayInput>
         </FormSection>
 
-        {/* ── section 5: status ── */}
+        {/* ── status ── */}
         <FormSection title="Status" icon={CheckCircle2}>
           <BooleanInput source="is_active" label="Active" />
         </FormSection>

@@ -5,16 +5,13 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
   CalendarDays,
-  User,
-  BookOpen,
-  CalendarCheck,
   CheckCircle2,
   HelpCircle,
   Tag,
-  FileText,
   Lightbulb,
   Hash,
 } from "lucide-react";
+import ExplanationRenderer from "@/components/ExplanationRenderer";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -90,8 +87,6 @@ function Section({
   );
 }
 
-// ─── meta row ─────────────────────────────────────────────────────────────────
-
 function MetaRow({
   label,
   children,
@@ -112,8 +107,6 @@ function MetaRow({
 }
 
 // ─── options field ────────────────────────────────────────────────────────────
-// Reads options and correct_answer from record context.
-// Highlights the correct answer in green, others in neutral.
 
 function OptionsField() {
   const record = useRecordContext();
@@ -159,9 +152,6 @@ function OptionsField() {
   );
 }
 
-// ─── topics field ─────────────────────────────────────────────────────────────
-// Renders each topic as a badge chip.
-
 function TopicsField() {
   const record = useRecordContext();
   const topics: string[] = record?.topics ?? [];
@@ -184,7 +174,7 @@ function TopicsField() {
   );
 }
 
-// ─── main show layout ─────────────────────────────────────────────────────────
+// ─── main layout ──────────────────────────────────────────────────────────────
 
 function QuestionShowLayout() {
   const record = useRecordContext();
@@ -198,7 +188,7 @@ function QuestionShowLayout() {
 
   return (
     <div className="max-w-2xl space-y-5 p-6">
-      {/* ── section 1: identity ── */}
+      {/* ── details ── */}
       <Section title="Details" icon={Hash}>
         <div className="space-y-2">
           <MetaRow label="ID">#{record?.id}</MetaRow>
@@ -209,7 +199,6 @@ function QuestionShowLayout() {
             </span>
           </MetaRow>
           <MetaRow label="Created by">
-            {/* ReferenceField works here because Show provides record context */}
             <ReferenceField
               source="created_by"
               reference="profiles"
@@ -239,14 +228,11 @@ function QuestionShowLayout() {
         </div>
       </Section>
 
-      {/* ── section 2: the question ── */}
+      {/* ── question ── */}
       <Section title="Question" icon={HelpCircle}>
-        {/* question text — big and prominent */}
         <p className="text-[15px] font-medium text-foreground leading-relaxed">
           {record?.question_text ?? "—"}
         </p>
-
-        {/* type + difficulty + status badges in a row */}
         <div className="flex flex-wrap items-center gap-2 mt-1">
           {typeStyle && (
             <Badge
@@ -284,56 +270,51 @@ function QuestionShowLayout() {
         </div>
       </Section>
 
-      {/* ── section 3: answer details ── */}
+      {/* ── answer ── */}
       <Section title="Answer" icon={CheckCircle2}>
-        {/* for true/false and short_answer, just show correct answer as text */}
         {questionType !== "mcq" ? (
-          <div className="space-y-3">
-            <MetaRow label="Correct answer">
-              <span className="inline-flex items-center gap-1.5 text-green-700 font-semibold">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {record?.correct_answer ?? "—"}
-              </span>
-            </MetaRow>
-          </div>
+          <MetaRow label="Correct answer">
+            <span className="inline-flex items-center gap-1.5 text-green-700 font-semibold">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {record?.correct_answer ?? "—"}
+            </span>
+          </MetaRow>
         ) : (
           <OptionsField />
         )}
 
-        {record?.explanation && (
+        {/* ── explanation — uses ExplanationRenderer, never renders raw JSON ── */}
+        {(record?.rich_explanation || record?.explanation) && (
           <div className="mt-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
-            <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
               <Lightbulb className="h-3 w-3" />
               Explanation
+              {record?.rich_explanation && (
+                <Badge
+                  variant="secondary"
+                  className="text-[9px] rounded-full ml-1"
+                >
+                  Rich
+                </Badge>
+              )}
             </div>
-            <p className="text-[13px] text-foreground leading-relaxed">
-              {record.explanation}
-            </p>
-          </div>
-        )}
 
-        {record?.rich_explanation && (
-          <div className="mt-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
-            <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-              <Lightbulb className="h-3 w-3" />
-              Rich Explanation
-            </div>
-            <p className="text-[13px] text-foreground leading-relaxed">
-              {record.rich_explanation}
-            </p>
+            {/* ← fix: pass to ExplanationRenderer, never render JSON directly */}
+            <ExplanationRenderer
+              richExplanation={record?.rich_explanation}
+              plainExplanation={record?.explanation}
+            />
           </div>
         )}
       </Section>
 
-      {/* ── section 4: topics ── */}
+      {/* ── topics ── */}
       <Section title="Topics" icon={Tag}>
         <TopicsField />
       </Section>
     </div>
   );
 }
-
-// ─── export ───────────────────────────────────────────────────────────────────
 
 export const QuestionShow = () => (
   <Show>
