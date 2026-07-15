@@ -75,7 +75,7 @@ function TB({
       disabled={disabled}
       title={title}
       aria-label={title}
-      className="h-8 w-8 p-0 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+      className="h-8 w-8 p-0 cursor-pointer data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
     >
       {children}
     </Toggle>
@@ -235,6 +235,7 @@ export default function ExplanationEditor({
   plainText,
   onChange,
 }: ExplanationEditorProps) {
+  console.log("content: ", content);
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
@@ -313,9 +314,9 @@ export default function ExplanationEditor({
   const currentLinkHref = editor.getAttributes("link").href ?? "";
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden bg-background shadow-sm">
+    <div className="rounded-xl border border-border overflow-visible  bg-background shadow-sm">
       {/* ══ TOOLBAR ══════════════════════════════════════════════════════════ */}
-      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/20">
+      <div className="sticky backdrop-blur-sm top-0 z-50 flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-muted/20">
         <TB
           title="Undo"
           onPress={() => editor.chain().focus().undo().run()}
